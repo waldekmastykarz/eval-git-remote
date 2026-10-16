@@ -57,15 +57,45 @@ class ConfigurationTests(unittest.TestCase):
                 submit_runs.main()
             request.assert_not_called()
 
-    def test_github_setup_requires_owner_before_creating_resources(self):
-        env = {**os.environ, "SCOPE_GITHUB_OWNER": ""}
-        result = subprocess.run(
-            ["pwsh", "-NoProfile", "-NonInteractive", "-File",
-             str(ROOT / "runner/setup.ps1"), "-Remote", "github"],
-            env=env, capture_output=True, text=True,
-        )
+    def test_github_setup_requires_gh_login_before_creating_resources(self):
+        scratch = ROOT / ".tmp"
+        scratch.mkdir(exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=scratch) as config:
+            # An empty gh config and no token env vars: gh isn't signed in.
+            env = {k: v for k, v in os.environ.items()
+                   if k not in ("GH_TOKEN", "GITHUB_TOKEN", "GH_ENTERPRISE_TOKEN", "GITHUB_ENTERPRISE_TOKEN")}
+            env["GH_CONFIG_DIR"] = config
+            result = subprocess.run(
+                ["pwsh", "-NoProfile", "-NonInteractive", "-File",
+                 str(ROOT / "runner/setup.ps1"), "-Remote", "github"],
+                env=env, capture_output=True, text=True,
+            )
         self.assertNotEqual(result.returncode, 0)
-        self.assertIn("Set SCOPE_GITHUB_OWNER", result.stderr)
+        self.assertIn("gh CLI signed in", result.stderr)
+
+    def test_github_setup_uses_signed_in_gh_account(self):
+        scratch = ROOT / ".tmp"
+        scratch.mkdir(exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=scratch) as folder:
+            folder = Path(folder)
+            fake_bin = folder / "bin"
+            fake_bin.mkdir()
+            # Stand-in gh: reports a signed-in account and fails everything else, so setup stops
+            # at its first GitHub call and shows which owner it used.
+            fake_gh = fake_bin / "gh"
+            fake_gh.write_text('#!/bin/sh\n[ "$1 $2" = "api user" ] && { echo signed-in-account; exit 0; }\nexit 1\n')
+            fake_gh.chmod(0o755)
+            workspace = folder / "run" / "workspace"
+            workspace.mkdir(parents=True)
+            env = {**os.environ, "PATH": f"{fake_bin}{os.pathsep}{os.environ['PATH']}"}
+            result = subprocess.run(
+                ["pwsh", "-NoProfile", "-NonInteractive", "-File",
+                 str(ROOT / "runner/setup.ps1"), "-Remote", "github",
+                 "-BundleUrl", str(ROOT / "fixture/baseline.bundle")],
+                cwd=workspace, env=env, capture_output=True, text=True,
+            )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("gh repo list signed-in-account failed", result.stderr)
 
     def test_profiles_pin_all_assets_to_one_commit(self):
         profiles = list((ROOT / "profiles").glob("*.json"))

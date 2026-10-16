@@ -9,7 +9,8 @@
   already pushed, and the local origin/main is 3 commits behind the remote's
   main. The only difference is where the remote lives:
 
-    github  a new private repo under -Owner, named from a fixed list
+    github  a new private repo, named from a fixed list, under the account
+            the gh CLI is signed in as (or -Owner)
     local   a bare repo at ../origin.git, next to the workspace
 
   Writes ../_agent_files/fixture.json so analysis knows what the run started
@@ -20,7 +21,7 @@ param(
   [ValidateSet('github', 'local')]
   [string]$Remote,
 
-  [string]$Owner = $env:SCOPE_GITHUB_OWNER,
+  [string]$Owner,
 
   [string]$BundleUrl = 'https://raw.githubusercontent.com/waldekmastykarz/eval-git-remote/main/fixture/baseline.bundle',
 
@@ -31,7 +32,11 @@ $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 
 if ($Remote -eq 'github' -and [string]::IsNullOrWhiteSpace($Owner)) {
-  throw 'Set SCOPE_GITHUB_OWNER on the runner or pass -Owner for GitHub runs'
+  # Repos are created under the account gh is signed in as, so no account name lives in this repo.
+  try { $Owner = (& gh api user --jq .login 2>$null | Out-String).Trim() } catch { $Owner = '' }
+  if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($Owner)) {
+    throw 'GitHub runs need the gh CLI signed in (gh auth login) as the account that owns the run repositories'
+  }
 }
 
 # Plausible repo names; a random suffix would itself signal a throwaway repo.

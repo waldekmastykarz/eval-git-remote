@@ -15,7 +15,7 @@
   Never fails: a failing teardown marks the SCOPE runner as poisoned.
 #>
 param(
-  [string]$Owner = $env:SCOPE_GITHUB_OWNER
+  [string]$Owner
 )
 
 $ErrorActionPreference = 'Continue'
@@ -46,9 +46,9 @@ try {
   }
 
   if ($fixture -and $fixture.variant -eq 'github' -and $fixture.repoName) {
-    $owner = if ($fixture.owner) { $fixture.owner } else { $Owner }
+    $owner = if ($fixture.owner) { $fixture.owner } elseif ($Owner) { $Owner } else { (& gh api user --jq .login 2>$null | Out-String).Trim() }
     if ([string]::IsNullOrWhiteSpace($owner)) {
-      throw 'Cannot delete the run repository: fixture owner and SCOPE_GITHUB_OWNER are missing'
+      throw 'Cannot delete the run repository: no owner in fixture.json and the gh CLI is not signed in'
     }
     gh repo delete "$owner/$($fixture.repoName)" --yes 2>&1 | Out-Null
     if ($LASTEXITCODE -ne 0) { Write-Warning "Could not delete $owner/$($fixture.repoName); setup will remove it once it's stale" }

@@ -86,9 +86,10 @@ model, same SCOPE harness. Only the remote differs:
   gh auth refresh -h github.com -s delete_repo
   ```
 
-  Set `SCOPE_GITHUB_OWNER` to that account on every runner. For direct script
-  execution, `setup.ps1 -Owner <account>` overrides the environment variable.
-  GitHub setup fails before creating resources if no owner is configured.
+  Run repos are created under the account `gh` is signed in as, so no
+  account name is configured anywhere. GitHub setup fails before creating
+  resources if `gh` isn't signed in. For direct script execution,
+  `setup.ps1 -Owner <account>` overrides the signed-in account.
 
 - **This repo**: published as public `waldekmastykarz/eval-git-remote`. The
   profiles download the runner scripts and the bundle from
