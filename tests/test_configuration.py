@@ -67,15 +67,34 @@ class ConfigurationTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("Set SCOPE_GITHUB_OWNER", result.stderr)
 
-    def test_generated_templates_use_current_branch(self):
+    def test_profiles_pin_all_assets_to_one_commit(self):
         profiles = list((ROOT / "profiles").glob("*.json"))
         self.assertEqual(len(profiles), 10)
+        refs = set()
         for path in profiles:
             with self.subTest(profile=path.name):
                 profile = json.loads(path.read_text())
-                self.assertEqual(profile["metadata"]["runnerRef"], "main")
-                for script in profile["scripts"].values():
-                    self.assertIn("/main/runner/", script)
+                ref = profile["metadata"]["runnerRef"]
+                self.assertRegex(ref, r"^[0-9a-f]{40}$")
+                refs.add(ref)
+                base = f"https://raw.githubusercontent.com/waldekmastykarz/eval-git-remote/{ref}"
+                self.assertEqual(
+                    profile["scripts"]["setup"],
+                    f"& ([scriptblock]::Create((irm {base}/runner/setup.ps1))) "
+                    f"-Remote {profile['metadata']['remote']} "
+                    f"-BundleUrl {base}/fixture/baseline.bundle",
+                )
+                self.assertEqual(
+                    profile["scripts"]["teardown"],
+                    f"& ([scriptblock]::Create((irm {base}/runner/teardown.ps1)))",
+                )
+        self.assertEqual(len(refs), 1)
+        for asset in ("runner/setup.ps1", "runner/teardown.ps1", "fixture/baseline.bundle"):
+            result = subprocess.run(
+                ["git", "cat-file", "-e", f"{ref}:{asset}"], cwd=ROOT,
+                capture_output=True, text=True,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_environment_state_is_ignored(self):
         for path in ("imported.json", ".env", ".env.local", ".tmp/check"):

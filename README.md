@@ -112,13 +112,17 @@ model, same SCOPE harness. Only the remote differs:
 
    Run it several times and compare the results.
 
-2. The checked-in profiles are templates pointing at `main`. After publishing
-   runner changes, generate locally pinned profiles so every measured run uses
-   the same scripts and bundle:
+2. The checked-in profiles pin setup, teardown and the fixture bundle to one
+   published commit. After publishing runner changes, regenerate and commit
+   the profiles so every measured run uses the same scripts and bundle:
 
    ```sh
    python3 generate_definitions.py --ref "$(git rev-parse HEAD)"
    ```
+
+   Commit the generated profiles after the referenced runner commit has been
+   published. Keep that full commit SHA fixed for the experiment; `main` is
+   only suitable for iteration, not measured runs.
 
 3. Import the definitions into SCOPE through its REST API. Supply a local env
    file containing `AUTHORITY` and `API_ACCESS_TOKEN`, and pass the API owner
@@ -132,8 +136,10 @@ model, same SCOPE harness. Only the remote differs:
    The script checks each new profile and fails if its scripts weren't stored.
    Keep env files, imported IDs and raw run snapshots private. Snapshots contain
    remote account names and URLs needed for judging; redact them before sharing.
-   Machine names are not collected. Do not commit locally pinned profiles or
-   environment-specific state as part of a public results release.
+   Machine names are not collected. Do not commit environment-specific state
+   as part of a public results release. Existing imported profiles must be
+   updated separately when their pinned revision changes: the importer skips
+   existing definitions by name rather than updating them.
 
    Submit each scenario with its own criteria set (`p1-…` with `p1-…`).
 

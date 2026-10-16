@@ -3,8 +3,8 @@
   "agent": "copilotCli",
   "languageModel": "gpt-5.6-sol",
   "scripts": {
-    "setup": "& ([scriptblock]::Create((irm https://raw.githubusercontent.com/waldekmastykarz/eval-git-remote/main/runner/setup.ps1))) -Remote github -BundleUrl https://raw.githubusercontent.com/waldekmastykarz/eval-git-remote/main/fixture/baseline.bundle",
-    "teardown": "& ([scriptblock]::Create((irm https://raw.githubusercontent.com/waldekmastykarz/eval-git-remote/main/runner/teardown.ps1)))"
+    "setup": "& ([scriptblock]::Create((irm https://raw.githubusercontent.com/waldekmastykarz/eval-git-remote/ca4dfc55c5792732c7f96aa13bc9d1b4b02d0ed1/runner/setup.ps1))) -Remote github -BundleUrl https://raw.githubusercontent.com/waldekmastykarz/eval-git-remote/ca4dfc55c5792732c7f96aa13bc9d1b4b02d0ed1/fixture/baseline.bundle",
+    "teardown": "& ([scriptblock]::Create((irm https://raw.githubusercontent.com/waldekmastykarz/eval-git-remote/ca4dfc55c5792732c7f96aa13bc9d1b4b02d0ed1/runner/teardown.ps1)))"
   },
   "metadata": {
     "ide": "None",
@@ -14,6 +14,6 @@
     "agentInstructions": "None",
     "experiment": "git-remote",
     "remote": "github",
-    "runnerRef": "main"
+    "runnerRef": "ca4dfc55c5792732c7f96aa13bc9d1b4b02d0ed1"
   }
 }
