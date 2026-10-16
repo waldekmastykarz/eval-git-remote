@@ -1,0 +1,19 @@
+{
+  "name": "Git remote eval: GitHub Copilot CLI, Claude Sonnet 5.5, local remote",
+  "agent": "copilotCli",
+  "languageModel": "claude-sonnet-5.5",
+  "scripts": {
+    "setup": "& ([scriptblock]::Create((irm https://raw.githubusercontent.com/waldekmastykarz/eval-git-remote/main/runner/setup.ps1))) -Remote local -BundleUrl https://raw.githubusercontent.com/waldekmastykarz/eval-git-remote/main/fixture/baseline.bundle",
+    "teardown": "& ([scriptblock]::Create((irm https://raw.githubusercontent.com/waldekmastykarz/eval-git-remote/main/runner/teardown.ps1)))"
+  },
+  "metadata": {
+    "ide": "None",
+    "agent": "GitHub Copilot CLI",
+    "languageModel": "Claude Sonnet 5.5",
+    "extensions": "None",
+    "agentInstructions": "None",
+    "experiment": "git-remote",
+    "remote": "local",
+    "runnerRef": "main"
+  }
+}

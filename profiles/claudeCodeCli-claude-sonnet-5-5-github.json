@@ -1,0 +1,19 @@
+{
+  "name": "Git remote eval: Claude Code, Claude Sonnet 5.5, GitHub remote",
+  "agent": "claudeCodeCli",
+  "languageModel": "claude-sonnet-5-5",
+  "scripts": {
+    "setup": "& ([scriptblock]::Create((irm https://raw.githubusercontent.com/waldekmastykarz/eval-git-remote/main/runner/setup.ps1))) -Remote github -BundleUrl https://raw.githubusercontent.com/waldekmastykarz/eval-git-remote/main/fixture/baseline.bundle",
+    "teardown": "& ([scriptblock]::Create((irm https://raw.githubusercontent.com/waldekmastykarz/eval-git-remote/main/runner/teardown.ps1)))"
+  },
+  "metadata": {
+    "ide": "None",
+    "agent": "Claude Code",
+    "languageModel": "Claude Sonnet 5.5",
+    "extensions": "None",
+    "agentInstructions": "None",
+    "experiment": "git-remote",
+    "remote": "github",
+    "runnerRef": "main"
+  }
+}

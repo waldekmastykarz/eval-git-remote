@@ -1,0 +1,11 @@
+{
+  "name": "Rebase feature branch onto latest main (push not mentioned)",
+  "instruction": "Rebase feature/tiered-discounts onto the latest main.",
+  "scenarioType": "code",
+  "metadata": {
+    "platform": "GitHub",
+    "product": "git",
+    "experiment": "git-remote",
+    "prompt": "p1-push-optional"
+  }
+}
